@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AEGIS — AI Military Surveillance System</title>
+  <link rel="stylesheet" href="/static/css/style.css?v=2" />
+  <link rel="stylesheet" href="/static/css/analyst.css?v=2" />
+  <link rel="stylesheet" href="/static/css/geo.css?v=2" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ── Scanline overlay ── -->
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <!-- ── Header ── -->
+  <header class="hdr">
+    <div class="hdr__logo">
+      <span class="hdr__icon">⬡</span>
+      <div class="hdr__title-block">
+        <h1 class="hdr__title">AEGIS</h1>
+        <p class="hdr__sub">Autonomous Enemy &amp; Ground Intelligence System</p>
+      </div>
+    </div>
+    <div class="hdr__meta">
+      <nav class="nav-links">
+        <a href="/" class="nav-link nav-link--active">◈ DETECTION</a>
+        <a href="/dashboard" class="nav-link">◆ DASHBOARD</a>
+        <a href="/globe" class="nav-link">⬡ GLOBE</a>
+      </nav>
+      <div class="status-pill" id="statusPill">
+        <span class="status-dot"></span>
+        <span id="statusText">SYSTEM READY</span>
+      </div>
+      <div class="clock" id="clock">00:00:00 UTC</div>
+    </div>
+  </header>
+
+  <!-- ── Main grid ── -->
+  <main class="grid">
+
+    <!-- ═══ LEFT — Upload + Controls ═══ -->
+    <section class="panel panel--upload">
+      <div class="panel__head">
+        <span class="panel__badge">INPUT</span>
+        <h2 class="panel__title">Target Acquisition</h2>
+        <div class="mode-toggle" id="modeToggle">
+          <button class="mode-btn mode-btn--active" data-mode="upload">📁 FILE</button>
+          <button class="mode-btn" data-mode="camera">📷 CAMERA</button>
+        </div>
+      </div>
+
+      <!-- File Upload Mode -->
+      <div class="input-mode" id="uploadMode">
+        <div class="drop-zone" id="dropZone" role="region" aria-label="Image drop zone">
+          <input type="file" id="fileInput" accept="image/*" hidden />
+          <div class="drop-zone__icon">⊕</div>
+          <p class="drop-zone__label">DROP IMAGE HERE</p>
+          <p class="drop-zone__hint">or click to browse · JPG PNG WEBP BMP GIF</p>
+          <button class="btn btn--ghost" id="browseBtn" type="button">SELECT FILE</button>
+        </div>
+      </div>
+
+      <!-- Camera Mode -->
+      <div class="input-mode hidden" id="cameraMode">
+        <div class="camera-container">
+          <video id="cameraVideo" autoplay playsinline></video>
+          <canvas id="cameraCanvas" class="hidden"></canvas>
+          <div class="camera-overlay">
+            <div class="camera-reticle"></div>
+          </div>
+        </div>
+        <div class="camera-controls">
+          <button class="btn btn--ghost" id="startCameraBtn" type="button">▶ START CAMERA</button>
+          <button class="btn btn--ghost hidden" id="captureBtn" type="button">📸 CAPTURE</button>
+          <button class="btn btn--ghost hidden" id="stopCameraBtn" type="button">⏹ STOP</button>
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div class="preview-wrap hidden" id="previewWrap">
+        <img id="previewImg" src="" alt="Uploaded image preview" />
+        <div class="preview-meta" id="previewMeta"></div>
+      </div>
+
+      <!-- Analyse button -->
+      <button class="btn btn--primary btn--full" id="analyseBtn" disabled type="button">
+        <span class="btn__icon">◈</span>
+        RUN DETECTION
+      </button>
+
+      <!-- Progress bar -->
+      <div class="progress-bar hidden" id="progressBar">
+        <div class="progress-bar__fill" id="progressFill"></div>
+        <span class="progress-bar__label" id="progressLabel">Initialising…</span>
+      </div>
+    </section>
+
+    <!-- ═══ CENTER — Annotated image ═══ -->
+    <section class="panel panel--viewer" id="viewerPanel">
+      <div class="panel__head">
+        <span class="panel__badge">LIVE FEED</span>
+        <h2 class="panel__title">Detection Overlay</h2>
+        <div class="panel__actions">
+          <button class="icon-btn" id="downloadBtn" title="Download annotated image" disabled>↓</button>
+        </div>
+      </div>
+
+      <div class="viewer" id="viewer">
+        <div class="viewer__placeholder" id="viewerPlaceholder">
+          <div class="reticle">
+            <div class="reticle__ring"></div>
+            <div class="reticle__cross"></div>
+            <p class="reticle__label">AWAITING INPUT</p>
+          </div>
+        </div>
+        <img class="viewer__img hidden" id="annotatedImg" src="" alt="Annotated detection result" />
+      </div>
+
+      <!-- Inference stats bar -->
+      <div class="stats-bar hidden" id="statsBar">
+        <span class="stat"><span class="stat__k">OBJECTS</span><span class="stat__v" id="statTotal">—</span></span>
+        <span class="stat"><span class="stat__k">HIGH RISK</span><span class="stat__v" id="statHigh">—</span></span>
+        <span class="stat"><span class="stat__k">INFERENCE</span><span class="stat__v" id="statInfer">—</span></span>
+        <span class="stat"><span class="stat__k">RESOLUTION</span><span class="stat__v" id="statRes">—</span></span>
+      </div>
+    </section>
+
+    <!-- ═══ RIGHT — Threat + Detections ═══ -->
+    <aside class="panel panel--results">
+
+      <!-- Threat banner -->
+      <div class="threat-banner" id="threatBanner">
+        <div class="threat-banner__icon" id="threatIcon">—</div>
+        <div class="threat-banner__body">
+          <span class="threat-banner__level" id="threatLevel">NO ASSESSMENT</span>
+          <p class="threat-banner__desc" id="threatDesc">Upload an image to begin analysis.</p>
+        </div>
+      </div>
+
+      <!-- Detection list -->
+      <div class="panel__head" style="margin-top:1rem">
+        <span class="panel__badge">TARGETS</span>
+        <h2 class="panel__title">Detection Log <span id="detectionCount" style="opacity:0.7"></span></h2>
+      </div>
+      <ul class="det-list" id="detList">
+        <li class="det-list__empty">No detections yet.</li>
+      </ul>
+
+      <!-- Visual separator -->
+      <div style="height:1px; background: var(--border); margin: 0.5rem 0;"></div>
+
+      <!-- Session log -->
+      <div class="panel__head" style="margin-top:1.25rem">
+        <span class="panel__badge">SESSION</span>
+        <h2 class="panel__title">Scan History</h2>
+        <button class="icon-btn" id="refreshLogsBtn" title="Refresh logs">↻</button>
+      </div>
+      <div class="log-table-wrap" id="logTableWrap">
+        <p class="log-empty">No scans in this session yet.</p>
+      </div>
+
+    </aside>
+
+    <!-- ═══ BOTTOM — GEO-INTELLIGENCE PANEL ═══ -->
+    <div class="panel panel--geo hidden" id="geoPanel">
+      <div class="panel__head">
+        <span class="panel__badge" style="background:#00e5ff;color:#001a20">GPS</span>
+        <h2 class="panel__title">GEO-INTELLIGENCE</h2>
+      </div>
+      <div class="geo-globe-wrap">
+        <canvas id="aegisGlobe" width="260" height="260"></canvas>
+      </div>
+      <div class="geo-info">
+        <div class="geo-coords">
+          <div class="coord-item">
+            <span class="coord-label">LATITUDE</span>
+            <span class="coord-value" id="geoLat">--</span>
+          </div>
+          <div class="coord-item">
+            <span class="coord-label">LONGITUDE</span>
+            <span class="coord-value" id="geoLon">--</span>
+          </div>
+        </div>
+        <div class="geo-location-name" id="geoLoc">--</div>
+        <div class="geo-alt" id="geoAlt"></div>
+        <a class="geo-map-btn" id="geoMapLink" href="#"
+           target="_blank" style="display:none">
+          View on Google Maps
+        </a>
+      </div>
+    </div>
+
+    <!-- ═══ BOTTOM — AI Tactical Analyst ═══ -->
+    <section class="panel panel--analyst hidden" id="analystPanel">
+      <div class="panel__head">
+        <span class="panel__badge">AI</span>
+        <h2 class="panel__title">Tactical Analyst</h2>
+        <div class="panel__actions">
+          <button class="icon-btn" id="clearChatBtn" title="Clear chat">✕</button>
+        </div>
+      </div>
+
+      <div class="analyst-container">
+        <!-- SITREP Display -->
+        <div class="analyst-sitrep" id="analystSitrep">
+          <div class="analyst-sitrep__loading">
+            <div class="loading-spinner"></div>
+            <span>Generating tactical assessment...</span>
+          </div>
+        </div>
+
+        <!-- Chat Interface -->
+        <div class="analyst-chat" id="analystChat">
+          <div class="analyst-chat__messages" id="chatMessages"></div>
+          <div class="analyst-chat__input">
+            <input 
+              type="text" 
+              id="chatInput" 
+              placeholder="Ask follow-up questions about this scan..."
+              disabled
+            />
+            <button class="btn btn--ghost" id="sendChatBtn" disabled>
+              <span>➤</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ── Footer ── -->
+  <footer class="ftr">
+    <span>AEGIS v1.0 · CLASSIFIED SYSTEM · AUTHORISED PERSONNEL ONLY</span>
+    <span>POWERED BY YOLO11 · PYTORCH · OPENCV</span>
+  </footer>
+
+  <script src="/static/js/main.js?v=2"></script>
+  <script src="/static/js/analyst.js?v=2"></script>
+  <script src="/static/js/geo.js?v=2"></script>
+</body>
+</html>

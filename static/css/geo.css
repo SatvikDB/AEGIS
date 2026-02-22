@@ -1,0 +1,89 @@
+/* static/css/geo.css - Complete replacement with globe layout */
+.panel--geo {
+  grid-column: 1 / -1;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: 280px 1fr;
+}
+
+.panel--geo .panel__head {
+  grid-column: 1 / -1;
+}
+
+.geo-globe-wrap {
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid var(--border);
+}
+
+#aegisGlobe {
+  border-radius: 50%;
+  box-shadow: 0 0 20px rgba(0,255,82,0.15);
+  display: block;
+}
+
+.geo-info {
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.geo-coords {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.coord-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.coord-label {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+}
+
+.coord-value {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: #00e5ff;
+  text-shadow: 0 0 8px rgba(0,229,255,0.3);
+}
+
+.geo-location-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.geo-alt {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+}
+
+.geo-map-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: #00e5ff;
+  text-decoration: none;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid #00e5ff;
+  border-radius: var(--radius);
+  letter-spacing: 0.08em;
+  transition: all 0.2s;
+}
+
+.geo-map-btn:hover {
+  background: rgba(0,229,255,0.08);
+}

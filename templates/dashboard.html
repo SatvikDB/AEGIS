@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AEGIS — Intelligence Dashboard</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="/static/css/dashboard.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- ── Scanline overlay ── -->
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <!-- ── Header ── -->
+  <header class="hdr">
+    <div class="hdr__logo">
+      <span class="hdr__icon">⬡</span>
+      <div class="hdr__title-block">
+        <h1 class="hdr__title">AEGIS</h1>
+        <p class="hdr__sub">Intelligence Dashboard · Analytics & Trends</p>
+      </div>
+    </div>
+    <div class="hdr__meta">
+      <nav class="nav-links">
+        <a href="/" class="nav-link">◈ DETECTION</a>
+        <a href="/dashboard" class="nav-link nav-link--active">◆ DASHBOARD</a>
+        <a href="/globe" class="nav-link">⬡ GLOBE</a>
+      </nav>
+      <div class="status-pill">
+        <span class="status-dot"></span>
+        <span>ANALYTICS READY</span>
+      </div>
+      <div class="clock" id="clock">00:00:00 UTC</div>
+    </div>
+  </header>
+
+  <!-- ── Main Dashboard ── -->
+  <main class="dashboard">
+
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+      <div class="dashboard-title">
+        <h2>INTELLIGENCE OVERVIEW</h2>
+        <p class="last-updated">Last updated: <span id="lastUpdated">--:--:--</span></p>
+      </div>
+      <div class="dashboard-actions">
+        <button class="btn btn--ghost btn--sm" id="exportCsvBtn">↓ EXPORT CSV</button>
+        <button class="btn btn--ghost btn--sm" id="exportJsonBtn">↓ EXPORT JSON</button>
+        <button class="btn btn--ghost btn--sm" id="refreshBtn">↻ REFRESH</button>
+      </div>
+    </div>
+
+    <!-- Summary Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-card__icon">📊</div>
+        <div class="stat-card__value" id="statTotalScans">0</div>
+        <div class="stat-card__label">Total Scans</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__icon">🎯</div>
+        <div class="stat-card__value" id="statTotalDetections">0</div>
+        <div class="stat-card__label">Total Detections</div>
+      </div>
+      <div class="stat-card stat-card--alert">
+        <div class="stat-card__icon">⚠</div>
+        <div class="stat-card__value" id="statCriticalToday">0</div>
+        <div class="stat-card__label">Critical Today</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__icon">🔝</div>
+        <div class="stat-card__value" id="statMostDetected">—</div>
+        <div class="stat-card__label">Most Detected</div>
+      </div>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="charts-row">
+      <div class="chart-panel">
+        <div class="panel__head">
+          <span class="panel__badge">DISTRIBUTION</span>
+          <h3 class="panel__title">Threat Level Distribution</h3>
+        </div>
+        <div class="chart-container">
+          <canvas id="threatChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-panel">
+        <div class="panel__head">
+          <span class="panel__badge">TOP TARGETS</span>
+          <h3 class="panel__title">Most Detected Classes</h3>
+        </div>
+        <div class="chart-container">
+          <canvas id="topClassesChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="chart-panel chart-panel--full">
+      <div class="panel__head">
+        <span class="panel__badge">TIMELINE</span>
+        <h3 class="panel__title">Detections Over Time (Last 30 Days)</h3>
+      </div>
+      <div class="chart-container">
+        <canvas id="timelineChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Heatmap -->
+    <div class="chart-panel chart-panel--full">
+      <div class="panel__head">
+        <span class="panel__badge">ACTIVITY</span>
+        <h3 class="panel__title">Detection Frequency Heatmap (Day × Hour)</h3>
+      </div>
+      <div id="heatmapContainer" class="heatmap-container"></div>
+    </div>
+
+    <!-- Charts Row 3 -->
+    <div class="chart-panel">
+      <div class="panel__head">
+        <span class="panel__badge">CONFIDENCE</span>
+        <h3 class="panel__title">Confidence Score Distribution</h3>
+      </div>
+      <div class="chart-container">
+        <canvas id="confidenceChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Recent Detections Table -->
+    <div class="chart-panel chart-panel--full">
+      <div class="panel__head">
+        <span class="panel__badge">RECENT</span>
+        <h3 class="panel__title">Recent Detections (Last 25)</h3>
+      </div>
+      <div class="table-container">
+        <table class="dashboard-table" id="recentTable">
+          <thead>
+            <tr>
+              <th data-sort="timestamp">Timestamp ▼</th>
+              <th data-sort="image_filename">Image</th>
+              <th data-sort="class_name">Class</th>
+              <th data-sort="confidence">Confidence</th>
+              <th data-sort="risk_level">Risk Level</th>
+              <th data-sort="threat_level">Threat Level</th>
+            </tr>
+          </thead>
+          <tbody id="recentTableBody">
+            <tr><td colspan="6" class="table-empty">Loading data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ── Footer ── -->
+  <footer class="ftr">
+    <span>AEGIS v2.0 · INTELLIGENCE DASHBOARD · CLASSIFIED SYSTEM</span>
+    <span>POWERED BY YOLO11 · PYTORCH · CHART.JS</span>
+  </footer>
+
+  <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

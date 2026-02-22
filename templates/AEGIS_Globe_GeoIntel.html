@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AEGIS Globe</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#020906;--panel:#060e07;--elev:#0b160c;--card:#08100a;
+  --bdr:rgba(0,255,80,0.12);--bhi:rgba(0,255,80,0.4);
+  --g:#00ff52;--gm:#00cc42;--gd:#004d1a;
+  --am:#ffb800;--rd:#ff2244;--cy:#00e5ff;
+  --t1:#c8ffda;--t2:#7aad8c;--t3:#3d6b4a;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t1);font-family:'Courier New',monospace;}
+body::after{content:'';position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.08) 3px);
+  pointer-events:none;z-index:9999;}
+
+/* HEADER */
+.hdr{display:flex;align-items:center;gap:1rem;padding:.5rem 1.2rem;
+     background:var(--panel);border-bottom:1px solid var(--bdr);flex-shrink:0;height:46px;}
+.logo{font-size:1.1rem;font-weight:bold;color:var(--g);letter-spacing:.25em;
+      text-shadow:0 0 18px rgba(0,255,82,.6);}
+.logo-sub{font-size:.5rem;color:var(--t3);letter-spacing:.1em;margin-top:2px;}
+.sep{width:1px;height:22px;background:var(--bdr);}
+.mod{font-size:.6rem;color:var(--gm);letter-spacing:.15em;}
+.hdr-r{margin-left:auto;display:flex;align-items:center;gap:.5rem;}
+.pill{display:flex;align-items:center;gap:.3rem;font-size:.58rem;color:var(--t2);
+      border:1px solid var(--bdr);border-radius:20px;padding:.15rem .55rem;}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--g);
+     box-shadow:0 0 5px var(--g);animation:blink 1.4s step-start infinite;}
+.dot-r{background:var(--rd);box-shadow:0 0 5px var(--rd);}
+.dot-a{background:var(--am);box-shadow:0 0 5px var(--am);}
+@keyframes blink{50%{opacity:0;}}
+
+/* LAYOUT */
+.body{display:grid;grid-template-columns:260px 1fr 240px;
+      height:calc(100vh - 46px);gap:1px;background:var(--bdr);}
+
+/* PANELS */
+.panel{background:var(--panel);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;}
+.panel::-webkit-scrollbar{width:3px;}
+.panel::-webkit-scrollbar-thumb{background:var(--gd);}
+.ph{display:flex;align-items:center;gap:.4rem;
+    padding:.45rem .75rem;border-bottom:1px solid var(--bdr);flex-shrink:0;}
+.bdg{font-size:.48rem;letter-spacing:.12em;padding:.14rem .4rem;border-radius:2px;color:var(--bg);}
+.ph-t{font-size:.6rem;letter-spacing:.09em;color:var(--t2);font-weight:bold;}
+.sec{padding:.65rem .75rem;border-bottom:1px solid var(--bdr);}
+.lbl{font-size:.5rem;color:var(--t3);letter-spacing:.1em;margin-bottom:.12rem;}
+.val{font-size:.85rem;color:var(--g);text-shadow:0 0 8px rgba(0,255,82,.3);font-weight:bold;}
+.val-a{color:var(--am);}
+.val-c{color:var(--cy);}
+.loc{font-size:.88rem;font-weight:600;color:var(--t1);margin-bottom:.15rem;line-height:1.3;}
+.loc-s{font-size:.55rem;color:var(--t3);letter-spacing:.08em;}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;}
+.ci{margin-bottom:.35rem;}
+
+/* THREAT */
+.tr-row{display:flex;align-items:center;gap:.5rem;padding:.5rem .75rem;border-bottom:1px solid var(--bdr);}
+.tl{font-size:.9rem;font-weight:bold;letter-spacing:.14em;}
+.tl-c{color:var(--rd);text-shadow:0 0 10px rgba(255,34,68,.5);}
+.tl-h{color:var(--am);text-shadow:0 0 10px rgba(255,184,0,.4);}
+.tl-e{color:#ffd600;}
+.tl-l{color:var(--g);}
+
+/* DETECTIONS */
+.dl{padding:.55rem .75rem;border-bottom:1px solid var(--bdr);display:flex;flex-direction:column;gap:.28rem;}
+.di{display:flex;align-items:center;gap:.4rem;padding:.35rem .5rem;
+    background:var(--elev);border:1px solid var(--bdr);border-radius:2px;border-left:3px solid transparent;}
+.di-h{border-left-color:var(--rd);}
+.di-m{border-left-color:var(--am);}
+.di-l{border-left-color:var(--g);}
+.dd{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.dn{font-size:.76rem;color:var(--t1);flex:1;}
+.dc{font-size:.65rem;color:var(--t2);}
+
+/* AI TEXT */
+.ai-b{padding:.6rem .75rem;border-bottom:1px solid var(--bdr);}
+.ai-l{font-size:.5rem;color:var(--t3);letter-spacing:.14em;margin-bottom:.4rem;}
+.ai-t{font-size:.76rem;line-height:1.65;color:var(--t2);
+      border-left:2px solid var(--gd);padding-left:.55rem;}
+.cur{display:inline-block;width:2px;height:.8em;background:var(--g);
+     margin-left:2px;vertical-align:middle;animation:blink .7s step-start infinite;}
+
+/* HISTORY */
+.hl{padding:.4rem .65rem;flex:1;display:flex;flex-direction:column;gap:.25rem;}
+.hi{display:flex;align-items:center;gap:.4rem;padding:.35rem .5rem;
+    background:var(--card);border:1px solid var(--bdr);border-radius:2px;
+    cursor:pointer;transition:border-color .15s,background .15s;}
+.hi:hover,.hi.act{border-color:var(--bhi);background:var(--elev);}
+.hd{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.hl-l{font-size:.62rem;color:var(--t2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hl-i{font-size:.55rem;color:var(--t3);}
+
+/* GLOBE AREA */
+.globe-area{display:flex;flex-direction:column;background:var(--bg);position:relative;}
+.gbar{display:flex;align-items:stretch;background:var(--panel);border-bottom:1px solid var(--bdr);flex-shrink:0;}
+.gs{padding:.4rem .85rem;border-right:1px solid var(--bdr);display:flex;flex-direction:column;}
+.gs-k{font-size:.5rem;color:var(--t3);letter-spacing:.1em;}
+.gs-v{font-size:.85rem;font-weight:bold;color:var(--g);}
+.gs-v-r{color:var(--rd);}
+.gs-v-a{color:var(--am);}
+.gbtns{margin-left:auto;display:flex;}
+.gb{padding:0 .8rem;background:none;border:none;border-left:1px solid var(--bdr);
+    color:var(--t2);font-size:.58rem;letter-spacing:.1em;font-family:'Courier New',monospace;
+    cursor:pointer;transition:color .15s,background .15s;}
+.gb:hover,.gb.on{color:var(--g);background:rgba(0,255,82,.06);}
+.cwrap{flex:1;position:relative;}
+#gc{display:block;width:100%;height:100%;}
+.cr{position:absolute;width:20px;height:20px;pointer-events:none;}
+.cr.tl{top:8px;left:8px;border-top:1px solid var(--g);border-left:1px solid var(--g);}
+.cr.tr{top:8px;right:8px;border-top:1px solid var(--g);border-right:1px solid var(--g);}
+.cr.bl{bottom:8px;left:8px;border-bottom:1px solid var(--g);border-left:1px solid var(--g);}
+.cr.br{bottom:8px;right:8px;border-bottom:1px solid var(--g);border-right:1px solid var(--g);}
+.zbw{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:2px;}
+.zb{width:26px;height:26px;background:rgba(6,14,7,.88);border:1px solid var(--bhi);
+    color:var(--g);font-size:.9rem;cursor:pointer;border-radius:2px;
+    display:flex;align-items:center;justify-content:center;transition:background .15s;font-family:inherit;}
+.zb:hover{background:rgba(0,255,82,.1);}
+.ov{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);
+    background:rgba(6,14,7,.88);border:1px solid var(--bhi);border-radius:2px;
+    padding:.18rem .75rem;font-size:.58rem;color:var(--g);letter-spacing:.1em;
+    pointer-events:none;white-space:nowrap;}
+.popup{position:absolute;pointer-events:none;background:rgba(6,14,7,.93);
+       border:1px solid rgba(0,255,82,.4);border-radius:2px;padding:.45rem .65rem;
+       font-size:.6rem;color:var(--t2);min-width:155px;display:none;}
+.pop-t{font-size:.6rem;color:var(--g);letter-spacing:.1em;margin-bottom:.28rem;font-weight:bold;}
+.pop-r{margin-bottom:.15rem;}
+.pop-k{color:var(--t3);}
+
+/* RIGHT PANEL */
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;padding:.6rem .75rem;border-bottom:1px solid var(--bdr);}
+.sg-i{padding:.4rem .5rem;background:var(--elev);border:1px solid var(--bdr);border-radius:2px;}
+.sg-k{font-size:.5rem;color:var(--t3);letter-spacing:.1em;margin-bottom:.15rem;}
+.sg-v{font-size:1rem;font-weight:bold;color:var(--g);}
+
+.hbs{padding:.6rem .75rem;border-bottom:1px solid var(--bdr);display:flex;flex-direction:column;gap:.3rem;}
+.hb{display:flex;align-items:center;gap:.35rem;}
+.hb-l{font-size:.5rem;color:var(--t3);letter-spacing:.06em;width:72px;flex-shrink:0;}
+.hb-tr{flex:1;height:5px;background:var(--card);border-radius:3px;overflow:hidden;}
+.hb-f{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gd),var(--g));transition:width .8s;}
+.hb-v{font-size:.55rem;color:var(--t2);width:26px;text-align:right;}
+
+.sys{padding:.6rem .75rem;display:flex;flex-direction:column;gap:.28rem;}
+.sys-r{display:flex;justify-content:space-between;font-size:.6rem;}
+.sys-k{color:var(--t3);}
+.sys-on{color:var(--g);}
+.sys-am{color:var(--am);}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div>
+    <div class="logo">⬡ AEGIS</div>
+    <div class="logo-sub">AUTONOMOUS ENEMY & GROUND INTELLIGENCE SYSTEM</div>
+  </div>
+  <div class="sep"></div>
+  <div class="mod">GEO-INTELLIGENCE GLOBE v2.0</div>
+  <div class="hdr-r">
+    <div class="pill"><span class="dot"></span>GPS LOCK</div>
+    <div class="pill"><span class="dot dot-a"></span>10 TARGETS</div>
+    <div class="pill"><span class="dot dot-r"></span>THREAT: HIGH</div>
+    <div class="pill" id="clk">--:--:-- UTC</div>
+  </div>
+</header>
+
+<div class="body">
+
+  <!-- LEFT PANEL -->
+  <div class="panel">
+    <div class="ph"><span class="bdg" style="background:var(--g)">SCAN</span><span class="ph-t">GEO-COORDINATES</span></div>
+    <div class="sec">
+      <div class="cg">
+        <div class="ci"><div class="lbl">LATITUDE</div><div class="val" id="s-lat">33.3152° N</div></div>
+        <div class="ci"><div class="lbl">LONGITUDE</div><div class="val" id="s-lon">44.3661° E</div></div>
+        <div class="ci"><div class="lbl">ALTITUDE</div><div class="val val-a">52m ASL</div></div>
+        <div class="ci"><div class="lbl">BEARING</div><div class="val val-a">247° WSW</div></div>
+      </div>
+      <div class="loc" id="s-loc">Karbala Governorate, Iraq</div>
+      <div class="loc-s">REVERSE GEOCODED · 98% CONF</div>
+    </div>
+
+    <div class="ph"><span class="bdg" style="background:var(--cy);color:#001a20">EXIF</span><span class="ph-t">IMAGE METADATA</span></div>
+    <div class="sec">
+      <div class="cg">
+        <div class="ci"><div class="lbl">DATE</div><div style="font-size:.7rem;color:var(--t2)">2024-11-14</div></div>
+        <div class="ci"><div class="lbl">TIME UTC</div><div style="font-size:.7rem;color:var(--t2)">14:32:08</div></div>
+        <div class="ci"><div class="lbl">CAMERA</div><div style="font-size:.7rem;color:var(--t2)">DJI Mavic 3</div></div>
+        <div class="ci"><div class="lbl">GPS SRC</div><div style="font-size:.7rem;color:var(--t2)">ONBOARD</div></div>
+      </div>
+    </div>
+
+    <div class="tr-row">
+      <div><div class="lbl">THREAT LEVEL</div><div class="tl tl-h" id="s-threat">HIGH</div></div>
+      <div style="flex:1"></div>
+      <div><div class="lbl">SCAN ID</div><div style="font-size:.72rem;color:var(--t2)">#A4F2B1</div></div>
+    </div>
+
+    <div class="ph"><span class="bdg" style="background:var(--rd)">TARGETS</span><span class="ph-t">DETECTIONS [3]</span></div>
+    <div class="dl">
+      <div class="di di-h"><div class="dd" style="background:var(--rd);box-shadow:0 0 4px var(--rd)"></div><span class="dn">MILITARY TRUCK</span><span class="dc">93.2%</span></div>
+      <div class="di di-h"><div class="dd" style="background:var(--rd);box-shadow:0 0 4px var(--rd)"></div><span class="dn">MILITARY TRUCK</span><span class="dc">87.5%</span></div>
+      <div class="di di-m"><div class="dd" style="background:var(--am);box-shadow:0 0 4px var(--am)"></div><span class="dn">RADAR STATION</span><span class="dc">76.1%</span></div>
+    </div>
+
+    <div class="ph"><span class="bdg" style="background:var(--g)">AI</span><span class="ph-t">GEO-INTELLIGENCE</span></div>
+    <div class="ai-b">
+      <div class="ai-l">▸ CLAUDE TACTICAL ANALYSIS</div>
+      <div class="ai-t" id="ai-out"></div>
+    </div>
+
+    <div class="ph"><span class="bdg" style="background:var(--am)">LOG</span><span class="ph-t">SCAN HISTORY</span></div>
+    <div class="hl" id="hist"></div>
+  </div>
+
+  <!-- GLOBE -->
+  <div class="globe-area">
+    <div class="gbar">
+      <div class="gs"><span class="gs-k">TOTAL SCANS</span><span class="gs-v">47</span></div>
+      <div class="gs"><span class="gs-k">CRITICAL</span><span class="gs-v gs-v-r">8</span></div>
+      <div class="gs"><span class="gs-k">HIGH</span><span class="gs-v gs-v-a">14</span></div>
+      <div class="gs"><span class="gs-k">ROTATION</span><span class="gs-v" id="rot-v">AUTO</span></div>
+      <div class="gbtns">
+        <button class="gb on" id="b-auto" onclick="tAuto()">AUTO ROTATE</button>
+        <button class="gb on" id="b-arcs" onclick="tArcs()">ARCS</button>
+        <button class="gb on" id="b-grid" onclick="tGrid()">GRID</button>
+        <button class="gb" id="b-atmo" onclick="tAtmo()">ATMOSPHERE</button>
+      </div>
+    </div>
+    <div class="cwrap">
+      <canvas id="gc"></canvas>
+      <div class="cr tl"></div><div class="cr tr"></div>
+      <div class="cr bl"></div><div class="cr br"></div>
+      <div class="zbw">
+        <button class="zb" onclick="doZoom(0.85)">+</button>
+        <button class="zb" onclick="doZoom(1.18)">−</button>
+        <button class="zb" onclick="resetV()" style="font-size:.5rem">RST</button>
+      </div>
+      <div class="ov">DRAG TO ROTATE  ·  SCROLL TO ZOOM  ·  CLICK MARKER TO SELECT</div>
+      <div class="popup" id="pop">
+        <div class="pop-t" id="pop-t">SCAN</div>
+        <div class="pop-r"><span class="pop-k">LOC: </span><span id="pop-l"></span></div>
+        <div class="pop-r"><span class="pop-k">LAT: </span><span id="pop-la"></span></div>
+        <div class="pop-r"><span class="pop-k">LON: </span><span id="pop-lo"></span></div>
+        <div class="pop-r"><span class="pop-k">THREAT: </span><span id="pop-th"></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="panel">
+    <div class="ph"><span class="bdg" style="background:var(--g)">GLOBAL</span><span class="ph-t">STATS</span></div>
+    <div class="sg">
+      <div class="sg-i"><div class="sg-k">CRITICAL</div><div class="sg-v" style="color:var(--rd)">8</div></div>
+      <div class="sg-i"><div class="sg-k">HIGH</div><div class="sg-v" style="color:var(--am)">14</div></div>
+      <div class="sg-i"><div class="sg-k">ELEVATED</div><div class="sg-v" style="color:var(--cy)">11</div></div>
+      <div class="sg-i"><div class="sg-k">LOW</div><div class="sg-v">14</div></div>
+      <div class="sg-i"><div class="sg-k">COUNTRIES</div><div class="sg-v">4</div></div>
+      <div class="sg-i"><div class="sg-k">ACTIVE</div><div class="sg-v" style="color:var(--rd)">3</div></div>
+    </div>
+
+    <div class="ph"><span class="bdg" style="background:var(--g)">CAMONET</span><span class="ph-t">HEAD SCORES</span></div>
+    <div class="hbs" id="hbs"></div>
+
+    <div class="ph"><span class="bdg" style="background:var(--cy);color:#001a20">VIEW</span><span class="ph-t">GLOBE STATE</span></div>
+    <div class="sec">
+      <div class="cg">
+        <div class="ci"><div class="lbl">TARGET LAT</div><div class="val val-c" id="g-lat">33.32°</div></div>
+        <div class="ci"><div class="lbl">TARGET LON</div><div class="val val-c" id="g-lon">44.37°</div></div>
+        <div class="ci"><div class="lbl">ROTATION</div><div class="val val-a" id="g-rot">—</div></div>
+        <div class="ci"><div class="lbl">ZOOM</div><div class="val val-a" id="g-zm">1.0×</div></div>
+      </div>
+      <div class="loc" id="g-loc">Karbala, Iraq</div>
+    </div>
+
+    <div class="ph"><span class="bdg" style="background:var(--am)">CHART</span><span class="ph-t">THREAT DIST.</span></div>
+    <div style="padding:.6rem .75rem;border-bottom:1px solid var(--bdr);">
+      <canvas id="pie" width="210" height="105"></canvas>
+    </div>
+
+    <div class="ph"><span class="bdg" style="background:var(--g)">SYS</span><span class="ph-t">STATUS</span></div>
+    <div class="sys">
+      <div class="sys-r"><span class="sys-k">YOLO11 ENGINE</span><span class="sys-on">● ACTIVE</span></div>
+      <div class="sys-r"><span class="sys-k">CAMONET-LITE</span><span class="sys-on">● ACTIVE</span></div>
+      <div class="sys-r"><span class="sys-k">AI ANALYST</span><span class="sys-on">● ACTIVE</span></div>
+      <div class="sys-r"><span class="sys-k">GPS / EXIF</span><span class="sys-on">● LOCKED</span></div>
+      <div class="sys-r"><span class="sys-k">GLOBE MODULE</span><span class="sys-am">● RENDERING</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CLOCK ─────────────────────────────────────────────────────────────────
+setInterval(function(){
+  var n=new Date();
+  document.getElementById('clk').textContent=
+    [n.getUTCHours(),n.getUTCMinutes(),n.getUTCSeconds()]
+    .map(function(x){return String(x).padStart(2,'0');}).join(':')+' UTC';
+},1000);
+
+// ── DATA ──────────────────────────────────────────────────────────────────
+var TC={CRITICAL:'#ff2244',HIGH:'#ffb800',ELEVATED:'#ffd600',LOW:'#00ff52'};
+var SCANS=[
+  {id:'A4F2B1',lat:33.3152,lon:44.3661,loc:'Karbala, Iraq',     threat:'HIGH',    active:true},
+  {id:'B7C3D2',lat:33.3406,lon:44.4009,loc:'Baghdad Outskirts', threat:'CRITICAL',active:false},
+  {id:'C1E8F4',lat:32.9812,lon:44.1034,loc:'Southern Iraq',     threat:'LOW',     active:false},
+  {id:'D2A9G5',lat:33.2341,lon:44.6782,loc:'Al-Mahmudiyah',     threat:'HIGH',    active:false},
+  {id:'E5H1K6',lat:33.7892,lon:44.0213,loc:'Samarra Region',    threat:'CRITICAL',active:false},
+  {id:'F3J2L7',lat:32.7654,lon:44.8432,loc:'An-Nasiriyah',      threat:'ELEVATED',active:false},
+  {id:'G8K4M8',lat:33.4567,lon:43.9123,loc:'Al-Habbaniyah',     threat:'HIGH',    active:false},
+  {id:'H2L6N9',lat:34.0123,lon:44.2341,loc:'Balad Air Base',    threat:'ELEVATED',active:false},
+  {id:'I9M3P0',lat:28.3835,lon:36.5662,loc:'NW Saudi Arabia',   threat:'LOW',     active:false},
+  {id:'J4N7Q1',lat:36.2021,lon:37.1343,loc:'Aleppo, Syria',     threat:'CRITICAL',active:false},
+];
+
+var activeScan=SCANS[0];
+var autoRot=true,showArcs=true,showGrid=true,showAtmo=false;
+var rotY=0.8,rotX=0.18,zf=1;
+var dragging=false,lmx=0,lmy=0;
+var frame=0,arcT=[0,0.3,0.6,0.1,0.5,0.8];
+var targetRotY=null,targetRotX=null;
+
+// ── GLOBE ENGINE ──────────────────────────────────────────────────────────
+var gc=document.getElementById('gc');
+var ctx=gc.getContext('2d');
+var W,H,CX,CY,R;
+
+function resize(){
+  var wrap=gc.parentElement;
+  W=gc.width=wrap.clientWidth;
+  H=gc.height=wrap.clientHeight;
+  CX=W/2; CY=H/2; R=Math.min(W,H)*0.36*zf;
+}
+
+function ll3(lat,lon){
+  var phi=(90-lat)*Math.PI/180;
+  var th=(lon+180)*Math.PI/180;
+  return{x:Math.sin(phi)*Math.cos(th),y:Math.cos(phi),z:Math.sin(phi)*Math.sin(th)};
+}
+
+function rot(p){
+  var x=p.x*Math.cos(rotY)-p.z*Math.sin(rotY);
+  var z=p.x*Math.sin(rotY)+p.z*Math.cos(rotY);
+  var y2=p.y*Math.cos(rotX)-z*Math.sin(rotX);
+  var z2=p.y*Math.sin(rotX)+z*Math.cos(rotX);
+  return{x:x,y:y2,z:z2};
+}
+
+function proj(p){
+  var rp=rot(p);
+  return{sx:CX+rp.x*R,sy:CY-rp.y*R,z:rp.z,v:rp.z>-0.1};
+}
+
+function pLL(lat,lon){return proj(ll3(lat,lon));}
+
+// ── STAR CACHE ────────────────────────────────────────────────────────────
+var starC=document.createElement('canvas');
+var starCtx=starC.getContext('2d');
+function mkStars(){
+  starC.width=W; starC.height=H;
+  starCtx.fillStyle='#020906'; starCtx.fillRect(0,0,W,H);
+  for(var i=0;i<220;i++){
+    var sx=Math.random()*W,sy=Math.random()*H,ss=Math.random()*1.4;
+    starCtx.fillStyle='rgba(200,255,220,'+(Math.random()*0.6+0.1)+')';
+    starCtx.beginPath();starCtx.arc(sx,sy,ss,0,Math.PI*2);starCtx.fill();
+  }
+}
+
+// ── CONTINENTS (lon,lat pairs) ────────────────────────────────────────────
+var CONTS=[
+  [[37,-6],[32,18],[22,37],[14,40],[4,42],[-4,40],[-17,35],[-30,30],[-35,19],[-34,0],[-18,-15],[0,-18],[15,-15],[22,-10],[34,-5],[37,-6]],
+  [[20,35],[35,26],[40,36],[60,37],[73,40],[80,42],[90,52],[100,55],[120,55],[135,45],[140,38],[130,30],[120,22],[100,10],[80,10],[65,23],[55,25],[45,38],[35,36],[25,42],[20,35]],
+  [[25,38],[40,37],[60,22],[56,12],[45,12],[38,20],[32,29],[25,38]],
+  [[-75,5],[-85,12],[-90,16],[-95,20],[-100,28],[-110,32],[-120,36],[-125,48],[-130,55],[-145,60],[-150,70],[-160,55],[-140,52],[-125,45],[-120,36],[-105,25],[-88,15],[-75,5]],
+  [[-35,-5],[-40,-20],[-55,-30],[-65,-35],[-70,-45],[-65,-55],[-55,-52],[-48,-28],[-40,-10],[-35,-5]],
+  [[114,-22],[120,-20],[128,-16],[136,-12],[140,-18],[148,-20],[152,-24],[150,-35],[144,-38],[138,-36],[130,-32],[114,-26],[114,-22]],
+];
+
+// ── DRAW ──────────────────────────────────────────────────────────────────
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  ctx.drawImage(starC,0,0);
+
+  // Atmosphere
+  if(showAtmo){
+    var ag=ctx.createRadialGradient(CX,CY,R*0.95,CX,CY,R*1.18);
+    ag.addColorStop(0,'rgba(0,255,82,0.07)');
+    ag.addColorStop(1,'transparent');
+    ctx.fillStyle=ag;
+    ctx.beginPath();ctx.arc(CX,CY,R*1.18,0,Math.PI*2);ctx.fill();
+  }
+
+  // Globe base
+  var bg=ctx.createRadialGradient(CX-R*0.3,CY-R*0.3,R*0.05,CX,CY,R);
+  bg.addColorStop(0,'#0d2214');bg.addColorStop(0.5,'#071409');
+  bg.addColorStop(0.8,'#040c06');bg.addColorStop(1,'#020806');
+  ctx.fillStyle=bg;
+  ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);ctx.fill();
+
+  // Clip
+  ctx.save();
+  ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);ctx.clip();
+
+  // Continents
+  CONTS.forEach(function(pts){
+    ctx.beginPath();var f=true;
+    pts.forEach(function(c){
+      var p=pLL(c[1],c[0]);
+      if(p.v){f?ctx.moveTo(p.sx,p.sy):ctx.lineTo(p.sx,p.sy);f=false;}
+    });
+    ctx.closePath();
+    ctx.fillStyle='rgba(0,80,30,0.55)';
+    ctx.strokeStyle='rgba(0,160,60,0.18)';
+    ctx.lineWidth=0.5;
+    ctx.fill();ctx.stroke();
+  });
+
+  // Grid
+  if(showGrid){
+    ctx.strokeStyle='rgba(0,255,82,0.07)';ctx.lineWidth=0.5;
+    for(var lat=-60;lat<=60;lat+=30){
+      ctx.beginPath();var f2=true;
+      for(var ln=-180;ln<=180;ln+=4){
+        var pp=pLL(lat,ln);
+        if(pp.v){f2?ctx.moveTo(pp.sx,pp.sy):ctx.lineTo(pp.sx,pp.sy);f2=false;}
+      }ctx.stroke();
+    }
+    for(var lon2=-180;lon2<180;lon2+=30){
+      ctx.beginPath();var f3=true;
+      for(var lt=-90;lt<=90;lt+=4){
+        var pp2=pLL(lt,lon2);
+        if(pp2.v){f3?ctx.moveTo(pp2.sx,pp2.sy):ctx.lineTo(pp2.sx,pp2.sy);f3=false;}
+      }ctx.stroke();
+    }
+  }
+
+  ctx.restore();
+
+  // Rim
+  ctx.strokeStyle='rgba(0,255,82,0.32)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);ctx.stroke();
+
+  // Specular
+  var sp=ctx.createRadialGradient(CX-R*.32,CY-R*.32,0,CX-R*.2,CY-R*.2,R*.55);
+  sp.addColorStop(0,'rgba(200,255,220,0.07)');sp.addColorStop(1,'transparent');
+  ctx.fillStyle=sp;ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);ctx.fill();
+
+  // Arcs
+  if(showArcs) drawArcs();
+
+  // Markers (back)
+  SCANS.forEach(function(s){
+    var p=pLL(s.lat,s.lon);
+    if(p.v&&s!==activeScan) drawMarker(s,p,false);
+  });
+
+  // Active reticle + marker
+  var ap=pLL(activeScan.lat,activeScan.lon);
+  if(ap.v){drawReticle(ap,activeScan);drawMarker(activeScan,ap,true);}
+
+  // Scan line sweep
+  var sa=(frame*0.015)%(Math.PI*2);
+  var grd=ctx.createLinearGradient(CX,CY,CX+Math.cos(sa)*R,CY+Math.sin(sa)*R);
+  grd.addColorStop(0,'rgba(0,255,82,0)');
+  grd.addColorStop(1,'rgba(0,255,82,0.1)');
+  ctx.strokeStyle=grd;ctx.lineWidth=R*0.35;
+  ctx.beginPath();ctx.moveTo(CX,CY);
+  ctx.lineTo(CX+Math.cos(sa)*R,CY+Math.sin(sa)*R);ctx.stroke();
+
+  frame++;
+  document.getElementById('g-rot').textContent=((rotY*180/Math.PI)%360|0)+'°';
+}
+
+// ── ARCS ──────────────────────────────────────────────────────────────────
+var ARC_PAIRS=[[0,1],[1,4],[0,3],[4,9],[5,8],[6,7]];
+function drawArcs(){
+  ARC_PAIRS.forEach(function(pair,i){
+    var s1=SCANS[pair[0]],s2=SCANS[pair[1]];
+    arcT[i]=(arcT[i]+0.004)%1;
+    drawArc(s1,s2,TC[s1.threat],arcT[i]);
+  });
+}
+
+function drawArc(s1,s2,color,t){
+  var p1=ll3(s1.lat,s1.lon),p2=ll3(s2.lat,s2.lon);
+  var dot=p1.x*p2.x+p1.y*p2.y+p1.z*p2.z;
+  var angle=Math.acos(Math.max(-1,Math.min(1,dot)));
+  if(angle<0.01)return;
+  var s=Math.sin(angle);
+  ctx.beginPath();var started=false,lv=false;
+  for(var i=0;i<=50;i++){
+    var f=i/50;
+    var lift=1+0.12*Math.sin(f*Math.PI);
+    var a=Math.sin((1-f)*angle)/s,b=Math.sin(f*angle)/s;
+    var ip={x:(a*p1.x+b*p2.x)*lift,y:(a*p1.y+b*p2.y)*lift,z:(a*p1.z+b*p2.z)*lift};
+    var rp=rot(ip);
+    var sx=CX+rp.x*R,sy=CY-rp.y*R;
+    if(rp.z>0){
+      if(!started||!lv){ctx.moveTo(sx,sy);}else{ctx.lineTo(sx,sy);}
+      started=true;
+    }
+    lv=rp.z>0;
+  }
+  ctx.strokeStyle=color+'66';ctx.lineWidth=1;ctx.stroke();
+  // Particle
+  var pf=t,lift2=1+0.12*Math.sin(pf*Math.PI);
+  var pa=Math.sin((1-pf)*angle)/s,pb=Math.sin(pf*angle)/s;
+  var pip={x:(pa*p1.x+pb*p2.x)*lift2,y:(pa*p1.y+pb*p2.y)*lift2,z:(pa*p1.z+pb*p2.z)*lift2};
+  var rpp=rot(pip);
+  if(rpp.z>0){
+    ctx.fillStyle=color;ctx.shadowColor=color;ctx.shadowBlur=8;
+    ctx.beginPath();ctx.arc(CX+rpp.x*R,CY-rpp.y*R,3,0,Math.PI*2);ctx.fill();
+    ctx.shadowBlur=0;
+  }
+}
+
+// ── MARKERS ───────────────────────────────────────────────────────────────
+function drawMarker(scan,p,isActive){
+  var c=TC[scan.threat];
+  var fade=0.6+p.z*0.4;
+  var sz=(isActive?9:6)*zf;
+  if(isActive){ctx.shadowColor=c;ctx.shadowBlur=18;}
+  ctx.globalAlpha=fade;
+  ctx.fillStyle=c;ctx.strokeStyle=isActive?'#fff':c;ctx.lineWidth=isActive?1.5:1;
+  ctx.beginPath();
+  ctx.moveTo(p.sx,p.sy-sz);
+  ctx.lineTo(p.sx+sz*.8,p.sy+sz*.6);
+  ctx.lineTo(p.sx-sz*.8,p.sy+sz*.6);
+  ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.shadowBlur=0;ctx.globalAlpha=1;
+}
+
+// ── RETICLE ───────────────────────────────────────────────────────────────
+function drawReticle(p,scan){
+  var c=TC[scan.threat];
+  var t=frame*0.04;
+  var pulse=14+Math.sin(t)*4;
+  ctx.save();ctx.translate(p.sx,p.sy);
+  ctx.rotate(t*0.5);
+  ctx.strokeStyle=c;ctx.lineWidth=1.5;ctx.globalAlpha=0.85;
+  var gaps=[[0.2,Math.PI/2-0.2],[Math.PI/2+0.2,Math.PI-0.2],[Math.PI+0.2,Math.PI*1.5-0.2],[Math.PI*1.5+0.2,Math.PI*2-0.2]];
+  gaps.forEach(function(g){ctx.beginPath();ctx.arc(0,0,pulse,g[0],g[1]);ctx.stroke();});
+  ctx.rotate(-t);
+  ctx.strokeStyle=c+'88';ctx.lineWidth=1;
+  ctx.beginPath();ctx.arc(0,0,pulse*0.6,0,Math.PI*2);ctx.stroke();
+  ctx.setLineDash([3,5]);ctx.strokeStyle=c+'55';
+  [[-pulse*1.8,-pulse*1.1],[pulse*1.1,pulse*1.8]].forEach(function(seg){
+    ctx.beginPath();ctx.moveTo(seg[0],0);ctx.lineTo(seg[1],0);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(0,seg[0]);ctx.lineTo(0,seg[1]);ctx.stroke();
+  });
+  ctx.setLineDash([]);
+  ctx.fillStyle=c;ctx.shadowColor=c;ctx.shadowBlur=12;
+  ctx.beginPath();ctx.arc(0,0,3.5,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+  ctx.restore();ctx.globalAlpha=1;
+  ctx.font='bold '+(10*zf|0)+'px Courier New,monospace';
+  ctx.fillStyle=c;ctx.textAlign='center';
+  ctx.fillText('TARGET LOCKED',p.sx,p.sy-pulse-12);
+  ctx.font=(9*zf|0)+'px Courier New,monospace';
+  ctx.fillStyle=c+'bb';
+  ctx.fillText(scan.lat.toFixed(3)+'\u00b0N  '+scan.lon.toFixed(3)+'\u00b0E',p.sx,p.sy-pulse-24);
+}
+
+// ── HIT TEST ──────────────────────────────────────────────────────────────
+function hitTest(mx,my){
+  for(var i=0;i<SCANS.length;i++){
+    var s=SCANS[i];
+    var p=pLL(s.lat,s.lon);
+    if(!p.v)continue;
+    var dx=mx-p.sx,dy=my-p.sy;
+    if(Math.sqrt(dx*dx+dy*dy)<14*zf)return s;
+  }
+  return null;
+}
+
+// ── SELECT ────────────────────────────────────────────────────────────────
+function selectScan(s){
+  activeScan=s;
+  document.getElementById('s-lat').textContent=s.lat.toFixed(4)+'\u00b0 N';
+  document.getElementById('s-lon').textContent=s.lon.toFixed(4)+'\u00b0 E';
+  document.getElementById('s-loc').textContent=s.loc;
+  document.getElementById('g-lat').textContent=s.lat.toFixed(2)+'\u00b0';
+  document.getElementById('g-lon').textContent=s.lon.toFixed(2)+'\u00b0';
+  document.getElementById('g-loc').textContent=s.loc;
+  var tEl=document.getElementById('s-threat');
+  tEl.textContent=s.threat;
+  tEl.className='tl tl-'+(s.threat==='CRITICAL'?'c':s.threat==='HIGH'?'h':s.threat==='ELEVATED'?'e':'l');
+  document.querySelectorAll('.hi').forEach(function(el,i){el.classList.toggle('act',SCANS[i]===s);});
+  // Smooth pan
+  targetRotY=-(s.lon)*Math.PI/180;
+  targetRotX=(s.lat)*Math.PI/180*0.5;
+  autoRot=false;
+  document.getElementById('b-auto').classList.remove('on');
+  document.getElementById('rot-v').textContent='MANUAL';
+}
+
+// ── INTERACTIONS ──────────────────────────────────────────────────────────
+gc.addEventListener('mousedown',function(e){dragging=true;lmx=e.clientX;lmy=e.clientY;});
+window.addEventListener('mouseup',function(){dragging=false;});
+window.addEventListener('mousemove',function(e){
+  if(dragging){
+    rotY+=(e.clientX-lmx)*0.007;
+    rotX-=(e.clientY-lmy)*0.007;
+    rotX=Math.max(-Math.PI/2.1,Math.min(Math.PI/2.1,rotX));
+    lmx=e.clientX;lmy=e.clientY;
+    autoRot=false;document.getElementById('b-auto').classList.remove('on');
+    document.getElementById('rot-v').textContent='MANUAL';
+  }
+  var r=gc.getBoundingClientRect();
+  var hit=hitTest(e.clientX-r.left,e.clientY-r.top);
+  var pop=document.getElementById('pop');
+  if(hit){
+    gc.style.cursor='pointer';
+    document.getElementById('pop-t').textContent='SCAN #'+hit.id;
+    document.getElementById('pop-l').textContent=hit.loc;
+    document.getElementById('pop-la').textContent=hit.lat.toFixed(4)+'\u00b0 N';
+    document.getElementById('pop-lo').textContent=hit.lon.toFixed(4)+'\u00b0 E';
+    var pth=document.getElementById('pop-th');
+    pth.textContent=hit.threat;pth.style.color=TC[hit.threat];
+    pop.style.display='block';
+    pop.style.left=(e.clientX-r.left+16)+'px';
+    pop.style.top=(e.clientY-r.top-20)+'px';
+  }else{gc.style.cursor='grab';pop.style.display='none';}
+});
+gc.addEventListener('click',function(e){
+  var r=gc.getBoundingClientRect();
+  var hit=hitTest(e.clientX-r.left,e.clientY-r.top);
+  if(hit)selectScan(hit);
+});
+gc.addEventListener('wheel',function(e){e.preventDefault();doZoom(e.deltaY<0?0.88:1.14);},{passive:false});
+
+function doZoom(f){zf=Math.max(0.5,Math.min(3,zf*f));R=Math.min(W,H)*0.36*zf;document.getElementById('g-zm').textContent=zf.toFixed(1)+'x';}
+function resetV(){rotY=0.8;rotX=0.18;zf=1;autoRot=true;document.getElementById('b-auto').classList.add('on');document.getElementById('rot-v').textContent='AUTO';}
+function tAuto(){autoRot=!autoRot;document.getElementById('b-auto').classList.toggle('on',autoRot);document.getElementById('rot-v').textContent=autoRot?'AUTO':'MANUAL';}
+function tArcs(){showArcs=!showArcs;document.getElementById('b-arcs').classList.toggle('on',showArcs);}
+function tGrid(){showGrid=!showGrid;document.getElementById('b-grid').classList.toggle('on',showGrid);}
+function tAtmo(){showAtmo=!showAtmo;document.getElementById('b-atmo').classList.toggle('on',showAtmo);}
+
+// ── HISTORY ───────────────────────────────────────────────────────────────
+var hist=document.getElementById('hist');
+SCANS.forEach(function(s,i){
+  var el=document.createElement('div');
+  el.className='hi'+(s.active?' act':'');
+  el.innerHTML='<div class="hd" style="background:'+TC[s.threat]+';box-shadow:0 0 5px '+TC[s.threat]+'66"></div>'
+    +'<span class="hl-l">'+s.loc+'</span><span class="hl-i">#'+s.id+'</span>';
+  el.addEventListener('click',function(){selectScan(s);});
+  hist.appendChild(el);
+});
+
+// ── HEAD BARS ─────────────────────────────────────────────────────────────
+[['STRAIGHT',78],['SILHOUETTE',45],['TEXTURE',91],['CIRCULAR',32],['SKIN',12],['PATTERN',67]].forEach(function(h){
+  var row=document.createElement('div');row.className='hb';
+  row.innerHTML='<span class="hb-l">'+h[0]+'</span>'
+    +'<div class="hb-tr"><div class="hb-f" style="width:'+h[1]+'%"></div></div>'
+    +'<span class="hb-v">'+h[1]+'%</span>';
+  document.getElementById('hbs').appendChild(row);
+});
+
+// ── PIE CHART ─────────────────────────────────────────────────────────────
+(function(){
+  var pc=document.getElementById('pie'),pctx=pc.getContext('2d');
+  var data=[['CRIT',8,'#ff2244'],['HIGH',14,'#ffb800'],['ELEV',11,'#ffd600'],['LOW',14,'#00ff52']];
+  var tot=47,ang=-Math.PI/2,cx=55,cy=52,r=42;
+  data.forEach(function(d){
+    var sw=d[1]/tot*Math.PI*2;
+    pctx.fillStyle=d[2];pctx.strokeStyle='#060e07';pctx.lineWidth=2;
+    pctx.beginPath();pctx.moveTo(cx,cy);pctx.arc(cx,cy,r,ang,ang+sw);pctx.closePath();
+    pctx.fill();pctx.stroke();
+    var mid=ang+sw/2;
+    pctx.font='8px Courier New,monospace';pctx.fillStyle=d[2];pctx.textAlign='center';
+    pctx.fillText(d[0],cx+Math.cos(mid)*(r+11),cy+Math.sin(mid)*(r+11));
+    ang+=sw;
+  });
+  pctx.font='bold 11px Courier New,monospace';pctx.fillStyle='#c8ffda';pctx.textAlign='center';
+  pctx.fillText('47',cx,cy+4);
+  var ly=12;
+  data.forEach(function(d){
+    pctx.fillStyle=d[2];pctx.fillRect(115,ly,7,7);
+    pctx.font='8px Courier New,monospace';pctx.fillStyle='#7aad8c';pctx.textAlign='left';
+    pctx.fillText(d[0]+' ('+d[1]+')',126,ly+7);ly+=17;
+  });
+})();
+
+// ── AI TYPEWRITER ─────────────────────────────────────────────────────────
+var AI='Location 33.32N 44.37E, Karbala Governorate, Iraq. 2.1km NE of city limits, 800m from Highway 9 logistics corridor. Truck detections consistent with convoy staging. Radar station 340m SW provides C2 support. Flat terrain, minimal cover. Recommend drone sweep of highway junction 1.4km north.';
+var ci=0,aiEl=document.getElementById('ai-out');
+aiEl.innerHTML='<span class="cur"></span>';
+function type(){
+  if(ci<AI.length){aiEl.innerHTML=AI.slice(0,ci+1)+'<span class="cur"></span>';ci++;setTimeout(type,ci<4?60:15);}
+  else aiEl.innerHTML=AI;
+}
+setTimeout(type,900);
+
+// ── MAIN LOOP ─────────────────────────────────────────────────────────────
+function loop(){
+  if(autoRot) rotY+=0.003;
+  if(targetRotY!==null){
+    rotY+=(targetRotY-rotY)*0.06;
+    rotX+=(targetRotX-rotX)*0.06;
+    if(Math.abs(targetRotY-rotY)<0.008&&Math.abs(targetRotX-rotX)<0.008){
+      rotY=targetRotY;rotX=targetRotX;targetRotY=null;targetRotX=null;
+    }
+  }
+  R=Math.min(W,H)*0.36*zf;
+  draw();
+  requestAnimationFrame(loop);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+resize();
+mkStars();
+window.addEventListener('resize',function(){resize();mkStars();});
+gc.style.cursor='grab';
+loop();
+</script>
+</body>
+</html>

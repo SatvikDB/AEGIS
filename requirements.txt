@@ -1,0 +1,41 @@
+# ── AEGIS Military Detection System — Python dependencies ──────────────────
+# Install into a virtual environment:
+#   python -m venv venv
+#   source venv/bin/activate        # Linux / macOS
+#   venv\Scripts\activate           # Windows
+#   pip install -r requirements.txt
+
+# ── Web framework ─────────────────────────────────────────────────────────
+flask>=3.0.0,<4.0
+werkzeug>=3.0.0,<4.0          # secure_filename, file helpers
+
+# ── AI / ML ───────────────────────────────────────────────────────────────
+# PyTorch: install the correct variant for your hardware from pytorch.org
+# The line below installs the CPU-only build (works everywhere).
+# For CUDA support, replace with the appropriate torch+cu* wheel.
+torch>=2.2.0
+torchvision>=0.17.0
+
+ultralytics>=8.3.0             # YOLOv8 / YOLO11 (same package)
+
+# ── Computer vision ────────────────────────────────────────────────────────
+opencv-python>=4.9.0           # headless-friendly; use opencv-python-headless on servers
+
+# ── Numerics / data ────────────────────────────────────────────────────────
+numpy>=1.26.0
+pandas>=2.2.0                  # optional — used for future CSV analytics
+
+# ── Utilities ─────────────────────────────────────────────────────────────
+pillow>=10.2.0                 # Ultralytics uses Pillow internally
+requests>=2.31.0               # Ultralytics auto-download of weights
+geopy>=2.4.0                   # Free reverse geocoding (Nominatim)
+certifi>=2024.0.0              # SSL certificates for geocoding
+
+# ── AI / LLM ──────────────────────────────────────────────────────────────
+# Universal LLM client (works with OpenAI, Groq, OpenRouter)
+openai>=1.0.0                  # OpenAI-compatible API client
+python-dotenv>=1.0.0           # Environment variable management
+
+# Optional providers (install only what you need):
+# anthropic>=0.39.0            # For Claude (paid)
+# google-generativeai>=0.3.0   # For Gemini (free tier available)

@@ -1,0 +1,111 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+env/
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# AEGIS Specific
+static/uploads/*
+!static/uploads/.gitkeep
+logs/*.csv
+logs/*.json
+!logs/.gitkeep
+
+# Models (large files)
+models/*.pt
+models/*.pth
+models/*.onnx
+!models/README.md
+
+# Training outputs
+runs/
+wandb/
+
+# Datasets (too large for git)
+datasets/*/images/
+datasets/*/labels/
+datasets/*/*.zip
+datasets/*/*.tar.gz
+
+# Large dataset folders
+military-vehicle.v6i.yolov8/
+Military and Civilian Vehicles Classification/
+*.zip
+
+# YOLO models
+*.pt
+
+# Test images (optional - keep structure but not all images)
+test_images_gps/*.jpg
+test_images_gps/*.png
+military_gps_test_images/*.jpg
+military_gps_test_images/*.png
+!test_images_gps/.gitkeep
+!military_gps_test_images/.gitkeep
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
+*.log
+nohup.out
+
+# Documentation builds
+docs/_build/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# PyCharm
+.idea/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# YOLO cache
+*.cache
